@@ -1,0 +1,735 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Linker and Loader</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 3px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	text-indent: -1.7em;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-block;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1.25em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(55, 53, 47, 1);
+}
+.highlight-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.highlight-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.highlight-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.highlight-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.highlight-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.highlight-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.highlight-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.highlight-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.highlight-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.highlight-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.highlight-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.highlight-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.highlight-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.highlight-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.highlight-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.block-color-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.block-color-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.block-color-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.block-color-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.block-color-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.block-color-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.block-color-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.block-color-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.block-color-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.block-color-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.block-color-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.block-color-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.select-value-color-pink { background-color: rgba(245, 224, 233, 1); }
+.select-value-color-purple { background-color: rgba(232, 222, 238, 1); }
+.select-value-color-green { background-color: rgba(219, 237, 219, 1); }
+.select-value-color-gray { background-color: rgba(227, 226, 224, 1); }
+.select-value-color-opaquegray { background-color: rgba(255, 255, 255, 0.0375); }
+.select-value-color-orange { background-color: rgba(250, 222, 201, 1); }
+.select-value-color-brown { background-color: rgba(238, 224, 218, 1); }
+.select-value-color-red { background-color: rgba(255, 226, 221, 1); }
+.select-value-color-yellow { background-color: rgba(253, 236, 200, 1); }
+.select-value-color-blue { background-color: rgba(211, 229, 239, 1); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="967f09b4-7d39-4a7a-94d3-a797093dbc1d" class="page sans"><header><div class="page-header-icon undefined"><span class="icon">📄</span></div><h1 class="page-title">Linker and Loader</h1></header><div class="page-body"><p id="bdd7bb61-78fd-4a51-8758-dcfa20f223a2" class="">
+</p><h3 id="ef29b044-1a7c-4fe8-adc9-7da8c263727f" class="">I. Compiler, Linker, Loader</h3><p id="ec0f62fc-2436-438c-ac6d-b8c614e7fb09" class="">
+</p><p id="24e356cf-8bcb-4752-a54c-53bb0f73426c" class=""><strong>Compiler</strong></p><p id="37575ffe-536b-4c02-8122-efc041dc095d" class="">source file → object file</p><p id="6095f24c-bdc6-4e41-983f-b71f6f8be12c" class="">
+</p><p id="7a655e3e-c32d-48d2-ab35-ae0c78051991" class=""><strong>Linker</strong></p><p id="76861f9d-e020-4152-b469-b4912c607988" class="">여러 개의 object file을 결합해서 하나의 object file, 즉 <strong>executable file</strong>로 바꿔준다.</p><p id="0ddbdcb1-019a-4b16-80d5-ff273754b286" class="">
+</p><p id="0c3cfe3d-bbe6-4fc8-bad1-b2e4c41689a2" class=""><strong>Loader</strong></p><p id="75025732-5a98-47b5-94ac-4e7fbf3a32b9" class="">OS의 한 부분으로 executable file에 있는 내용을 메인 메모리에 올리고 프로세스로 만들어준다.</p><p id="99fb7a3d-91c2-493c-a8c1-c5f2a52eee0b" class="">
+</p><h3 id="1ae0d488-9268-4375-8640-ee8309df76d5" class="">II. Linker의 역할</h3><p id="b9e8f679-7efd-4f4f-88e5-86cf61d3ba0a" class="">
+</p><p id="fcfbed25-f89b-4d5d-be4d-bcd1ebea6c07" class="">object file 안에는 여러 section이 존재한다.</p><p id="edc736ba-d51d-4369-8ff4-10fbe7395902" class="">
+</p><p id="c1807c53-a38e-4dd2-8b9c-1c598f300d09" class=""><strong>Text Section (= Code Section)</strong></p><p id="235082d2-8f22-4539-bf70-ecf4a5f801b8" class="">실행할 instructions 가 위치한다.</p><p id="d7786f01-3c9d-40cf-9cb7-8cd88576f09f" class="">ex) <code>printf(”hello”);</code></p><p id="ce5dc3a4-7b7b-4e1a-b48f-def68638c692" class="">
+</p><p id="664bcaac-8539-418d-a071-7b414c2588f5" class=""><strong>Data Section</strong></p><p id="3f736306-e456-4e7c-8331-4df797865663" class="">초기화 된 전역 변수들이 위치한다.</p><p id="5a2405fa-4041-4367-8b09-3e990391d608" class="">ex) <code>int a = 0;</code></p><p id="0a8483f8-9433-44fa-8c4c-31ec3e131eca" class="">
+</p><p id="44826f55-4b78-4907-b088-b26312e1e9ec" class=""><strong>BSS Section</strong></p><p id="bdfc59fa-c2d9-4fb7-9c73-80f8a1e3e810" class="">초기화 되지 않은 전역 변수들이 위치한다.</p><p id="31ff3e65-5a53-416a-bf03-41e9f953b568" class="">ex) <code>int b;</code></p><p id="db12c112-210a-4440-9803-9bd14eb4d590" class="">ex) <code>int array[1000000];</code></p><p id="a9493f2e-cb4f-48fb-b0d5-5241d8657187" class="">
+</p><p id="73e3f182-0b63-40b6-9379-b4f0c816014e" class=""><strong>기타</strong></p><p id="f604a145-69ed-42dc-bb80-e8dc380c7d7a" class="">이외에도 Symbol table, Relocation table 등의 섹션이 존재한다.</p><p id="820690f9-053d-4bc3-834f-c44b49a5d44e" class="">
+</p><p id="e0b8f0fc-4f1d-4b10-bd20-c64e9f8be3d9" class=""><mark class="highlight-purple"><strong>Note</strong></mark></p><p id="94777f30-f128-44ba-897a-3fe853160015" class="">왜 Data section과 BSS section을 구분하는 걸까?</p><p id="00ecb8e0-0daa-43ec-b900-ffe722549ce3" class="">초기화 된 전역변수는 변수의 주소 뿐만 아니라 초기값도 object 파일에 저장해야 한다. 예를 들어, <code>int a = 0;</code> 라는 instruction을 포함하는 파일은 최소 4 bytes 이상의 파일 용량을 가지게 된다.</p><p id="283a3034-d111-4cb9-8d15-ef4b508a705f" class="">하지만, 초기화 되지 않은 전역변수는 변수의 주소만 object 파일에 저장하면 된다.  예를 들어, <code>int array[1000000];</code> 라는 instruction을 포함하는 파일이라고 해서 400MB 이상의 파일 용량을 가지지는 않는다. 이는 초기화 되지 않은 전역변수를 초기화 된 전역변수와 다르게 취급하기 때문이다.</p><p id="92226774-eede-4720-b54b-a848acb3d4ce" class="">
+</p><p id="6a293c26-0a1e-4967-8e2b-18ee0618aaa8" class=""><mark class="highlight-purple"><strong>Linker의 역할</strong></mark></p><p id="a2e343f6-cff7-496d-b951-af86af0481ef" class="">링커는 여러 object 파일에 있는 동일한 타입의 섹션을 병합한다. 이 때, 어떤 주소에 어떤 섹션을 배치하는지는 링커 스크립트가 결정한다. </p><p id="d274e0b7-72a8-40c0-a8c2-f4e930c56a63" class="">대부분의 개발자는 GNU 내장 링커 스크립트를 사용하기 때문에 이 부분에 대해서 고민할 필요가 없지만, embeded system 개발자의 경우 링커 스크립트로 섹션의 배치를 직접 세팅해야 될 때도 있다.</p><p id="5e0c630c-411e-475a-b158-ad2b2268a14b" class="">
+</p><h3 id="545f1d9a-00e8-4014-ba79-7760032288b8" class="">III. Loader의 역할</h3><p id="cc1b7745-b785-4d83-9371-7f38dab3a032" class="">executable file에 어느 섹션을 어느 주소에 배치할지가 전부 정해져 있기 때문에 <strong>Loader</strong>는 executable file을 그대로 읽어서 메모리에 올려주면 그만이다. </p><p id="df515f06-6a12-4181-bfe8-dc53a30b5390" class="">이후 Program Counter만 프로그램의 시작점으로 세팅해주면 된다.</p><p id="51a6d297-7401-4889-89fd-abff8985a2c5" class="">
+</p><h3 id="355a609f-0f30-4f71-aeb9-772a1af6648f" class="">IV. Compiling and Linking Process</h3><p id="331f4ad3-6f12-4990-a5f5-708d2d6e17f2" class="">실제 compiling and linking process에서는 2가지 문제를 해결할 필요가 있다.</p><p id="16e75da4-d446-404a-8ddd-9f6b8a4311b9" class="">
+</p><h3 id="67577fe0-2c96-4844-bb26-ae113e236caf" class=""><strong>Problem 1</strong> </h3><blockquote id="4e341391-216b-4614-9f2c-677d7c434b29" class=""><strong>“Computer cannot recognize symbolic names”</strong></blockquote><p id="cbb26f63-e422-4cd2-9b5b-d863edd77b5c" class="">컴퓨터는 사람이 지은 함수명이나 변수명을 이해할 수 없다.</p><p id="03fea86b-42d1-494d-a8a3-9ecab3eb542e" class="">
+</p><p id="02e2679d-2766-4d92-87de-159e37c1375e" class="">이 문제는 컴파일링 단계에서 symbol name을 key, memory address를 value로 하는 <mark class="highlight-purple"><strong>symbol table</strong></mark>을 만들면 해결된다.</p><p id="0cffd7da-34f2-4985-9f60-e6f2e64a0356" class="">
+</p><p id="bf77dede-f193-413a-afec-e6d742345898" class=""><strong>Example of </strong><mark class="highlight-purple"><strong>symbol table</strong></mark></p><pre id="33a35638-fa57-41e1-a5f0-91b5ffec91d4" class="code"><code>int x = 10;
+int y = 20;
+int z = 30;
+int m;
+
+int func(int a) {
+	return a+1;
+}
+
+int main(void) {
+	m = x + y + z;
+	x = func(10);
+	return 0;
+}</code></pre><table id="1bc1b309-61cb-41e9-9ed8-5b5d7d225d2c" class="simple-table"><thead class="simple-table-header"><tr id="c1df88d9-2ce7-44ff-b43e-6e12b018df0a"><th id="i`ms" class="simple-table-header-color simple-table-header">symbol name</th><th id="CaqQ" class="simple-table-header-color simple-table-header">section</th><th id="@ZSr" class="simple-table-header-color simple-table-header">offset</th></tr></thead><tbody><tr id="c12a4701-afa3-4427-b490-6e728fb75294"><td id="i`ms" class="">func</td><td id="CaqQ" class="">text</td><td id="@ZSr" class="">0x0</td></tr><tr id="d6e2c1ae-ba1c-4724-b22b-5e818b7dfdbf"><td id="i`ms" class="">main</td><td id="CaqQ" class="">text</td><td id="@ZSr" class="">0x10</td></tr><tr id="599735f3-331d-457d-bd2e-335ce54412f2"><td id="i`ms" class="">m</td><td id="CaqQ" class="">bss</td><td id="@ZSr" class="">0x0</td></tr><tr id="fe723649-f6e5-457a-adea-ff6e9e6ad021"><td id="i`ms" class="">x</td><td id="CaqQ" class="">data</td><td id="@ZSr" class="">0x0</td></tr><tr id="1ecc9217-1987-4a96-a3c8-42bccb07f0ce"><td id="i`ms" class="">y</td><td id="CaqQ" class="">data</td><td id="@ZSr" class="">0x4</td></tr><tr id="ec2cafda-9c5f-4bb4-9dac-dd6d41f6df4c"><td id="i`ms" class="">z</td><td id="CaqQ" class="">data</td><td id="@ZSr" class="">0x8</td></tr></tbody></table><p id="cbe73caa-f347-4092-a16f-dd743829ca8b" class="">
+</p><h3 id="f88c6688-8559-41c2-a193-04e8bb522897" class=""><strong>Problem 2</strong></h3><blockquote id="34b85b8e-ca0e-4836-a4ff-e7dca4053fb0" class=""><strong>“Compiler can’t convert all symbol reference using symbol table”</strong></blockquote><p id="11d2895b-c51f-4dab-80c3-10f22ac42c06" class="">컴파일러는 하나의 object file만 다룰 수 있기 때문에 <strong>cross-reference</strong>가 어느 주소에 있는지는 알 수가 없다.</p><p id="04566894-9512-4b24-9b32-a2e70ae532e5" class="">
+</p><p id="6c8b877f-9709-4175-a3a5-a15f4b1b51e0" class="">이 문제를 해결하기 위해서 컴파일러는 memory address를 key, symbol name을 value로 하는 <mark class="highlight-purple"><strong>relocation table</strong></mark>을 만들고 다음과 같은 일을 한다.</p><ul id="eb5e9279-da12-4e3a-a4bf-b2c0f5fa52b6" class="bulleted-list"><li style="list-style-type:disc">text section을 읽다가 internal symbol을 만나면 해당 symbol을 PC relative address로 변환한다.예를 들어, text section에 있는 <code>call int_func</code> instruction은 <code>call PC+0x1B</code>로 변환된다.</li></ul><ul id="7269ee85-eba5-45b1-aca1-9b4d8975d357" class="bulleted-list"><li style="list-style-type:disc">text section을 읽다가 cross-reference를 만나면 해당 symbol을 <code>0x0</code>으로 변환하고, relocation table에 (instruction’s address, symbolic name)을 등록한다.<p id="d745223a-64a3-4129-b3f1-e401f46c0a94" class="">예를 들어, text section에 있는 <code>call ext_func</code> instruction은 <code>call 0x0</code>으로 변환된다.</p></li></ul><p id="0c3247c1-a97a-467d-ba98-919588bc4669" class="">
+</p><p id="334bdac6-c966-441b-b732-44f0b77b9c63" class=""><strong>Example of </strong><mark class="highlight-purple"><strong>relocation table</strong></mark></p><pre id="6fedcc50-f57c-479a-bc6e-ad3e34aa8096" class="code"><code>extern int ext_var;
+extern int ext_func(int a);
+
+void main() {
+	ext_var = 10;
+	ext_func(10);
+}</code></pre><table id="7657cfb9-c413-433f-8e41-b7bc6ec9b0aa" class="simple-table"><thead class="simple-table-header"><tr id="2053191d-9354-4e49-adcc-99b21c555646"><th id="XAA;" class="simple-table-header-color simple-table-header">section</th><th id="e]x&lt;" class="simple-table-header-color simple-table-header">offset</th><th id=":eRI" class="simple-table-header-color simple-table-header">symbol name</th></tr></thead><tbody><tr id="26839c62-5deb-45af-a69b-d169482784f6"><td id="XAA;" class="">text</td><td id="e]x&lt;" class="">0x16</td><td id=":eRI" class="">ext_var</td></tr><tr id="c0c2492f-0820-4c5b-9e95-a95b5ee3cf8e"><td id="XAA;" class="">text</td><td id="e]x&lt;" class="">0x24</td><td id=":eRI" class="">ext_func</td></tr></tbody></table><p id="7106bf8e-c437-46c9-a985-1163d05aedb2" class="">
+</p><p id="6ca50b68-3669-491c-800e-4a04f588c616" class="">링커는 링커 스크립트에 따라서 각 섹션을 병합하고 배치한다. 동시에 링커는 모든 object file의 symbol table을 병합한 symbol table을 만든다. 물론 final symbol table은 offset이 아닌 load address를 value로 갖는다.</p><p id="247fb61c-acf9-4887-8a44-ded2f0b2467b" class="">
+</p><p id="e9303153-2898-4777-877a-862f32e70777" class="">마지막으로 링커는 relocation table과 symbol table을 이용해 cross-reference <code>0x0</code>을 load address로 바꿔준다.</p><p id="86d28135-e98e-45e0-97b5-deef87600256" class="">
+</p><p id="a0e78382-1470-40c8-9f52-b1988bf08853" class=""><strong>Example</strong></p><p id="a17bc329-ff7c-477a-9951-67ec6fd1571b" class="">먼저, layout of sections가 결정된다.</p><table id="dc3f1988-b6c9-4cc8-b4a9-4818da6ea5de" class="simple-table"><thead class="simple-table-header"><tr id="15fdbe04-c3ac-4e31-8e89-4692529d5034"><th id="UXkA" class="simple-table-header-color simple-table-header">section</th><th id="&lt;Gd;" class="simple-table-header-color simple-table-header">load address</th></tr></thead><tbody><tr id="11cec8a7-e339-4475-8480-69dd447cb8ac"><td id="UXkA" class="">main.o(text)</td><td id="&lt;Gd;" class="">0x4000</td></tr><tr id="cc2c1c2b-81bb-452f-ad34-6b615676e32d"><td id="UXkA" class="">ext.o(text)</td><td id="&lt;Gd;" class="">0x4100</td></tr><tr id="dfc75a35-64cb-4962-a630-3b4e6b48f535"><td id="UXkA" class="">ext.o(data)</td><td id="&lt;Gd;" class="">0x8000</td></tr></tbody></table><p id="bcea1206-af0f-4644-be0b-f93de8b785ae" class="">동시에 병합된 symbol table이 만들어진다.</p><table id="e9a7cf6d-da41-46be-84ba-7ee90345fa67" class="simple-table"><thead class="simple-table-header"><tr id="ed43f6bc-efc0-42a2-a0e2-96a9f27bcc19"><th id="Ve[h" class="simple-table-header-color simple-table-header">symbol name</th><th id="^NMQ" class="simple-table-header-color simple-table-header">load address</th></tr></thead><tbody><tr id="32a400cc-0675-4cf4-a387-a2a9747a6d8b"><td id="Ve[h" class="">main</td><td id="^NMQ" class="">0x4000</td></tr><tr id="0dc44fea-4cbb-429e-bb92-ca0245a5c733"><td id="Ve[h" class="">int_func</td><td id="^NMQ" class="">0x4050</td></tr><tr id="b1598365-2ff1-43f9-a3b7-f456a7d78d60"><td id="Ve[h" class="">ext_func</td><td id="^NMQ" class="">0x4100</td></tr><tr id="a78e73a9-d3af-4dad-8549-e5a0d1135805"><td id="Ve[h" class="">ext_var</td><td id="^NMQ" class="">0x8000</td></tr></tbody></table><p id="0f6557d3-a408-44ec-af1e-9eee07395e8b" class="">
+</p><pre id="d9d7346f-946d-4a89-ab33-a05c15bd761d" class="code"><code>			main:
+				...
+				call PC+0x4C
+				...
+0x16    mov %eax, 0x0
+0x20    add %eax, $10
+0x24    mov 0x0, %eax
+0x28    call 0x0
+			...</code></pre><table id="104a3c47-1110-49f2-9aaa-eee985dfbced" class="simple-table"><thead class="simple-table-header"><tr id="81a4cf5e-0c44-4af1-bcdb-1d4500f95c9a"><th id="XAA;" class="simple-table-header-color simple-table-header">section</th><th id="e]x&lt;" class="simple-table-header-color simple-table-header">offset</th><th id=":eRI" class="simple-table-header-color simple-table-header">symbol name</th></tr></thead><tbody><tr id="3bcd64cb-1647-46fc-9a8a-af6d9d4168ad"><td id="XAA;" class="">text</td><td id="e]x&lt;" class="">0x16</td><td id=":eRI" class="">ext_var</td></tr><tr id="fad439a8-0427-4adc-99b9-a5f62c8b2c75"><td id="XAA;" class="">text</td><td id="e]x&lt;" class="">0x24</td><td id=":eRI" class="">ext_var</td></tr><tr id="53180563-b9f4-48d3-9b57-12aa86cf29c4"><td id="XAA;" class="">text</td><td id="e]x&lt;" class="">0x28</td><td id=":eRI" class="">ext_func</td></tr></tbody></table><p id="06a2c96e-3354-4487-b623-3b69416160d8" class="">링커는 다음과 같은 일을 한다.</p><ul id="ae007b0a-363a-48a8-840b-e1d691a1b221" class="bulleted-list"><li style="list-style-type:disc">relocation table의 첫 번째 record를 읽는다. <p id="38abb302-2683-4b91-9ee6-daa94919c1d0" class=""><strong>0x16</strong>에 있는 <strong>0x0</strong>의 symbol name은 <code>ext_var</code>이다.</p><p id="f3d6b50b-92f7-4391-b68d-072f634c39a7" class="">symbol table을 읽는다.</p><p id="3240099e-0a76-4b2c-a518-4bf295187517" class=""><code>ext_var</code>의 load address는 <strong>0x8000</strong>이다.</p><p id="edc2e7af-4f41-4fb4-b217-0309c878da3b" class=""><strong>0x16</strong>에 있는 <strong>0x0</strong>을 <strong>0x8000</strong>으로 바꿔준다.</p></li></ul><ul id="4d3abe09-a2ff-41de-a3f8-408744612abb" class="bulleted-list"><li style="list-style-type:disc">relocation table의 두 번째 record를 읽는다. <p id="5d69b4aa-a285-4ac5-a790-9684ef15214e" class=""><strong>0x24</strong>에 있는 <strong>0x0</strong>의 symbol name은 <code>ext_var</code>이다.</p><p id="94b0157c-965d-4af7-8e1f-67732556ac9c" class="">symbol table을 읽는다.</p><p id="bb95f08a-98d7-4b94-bcee-4e7caa9b993e" class=""><code>ext_var</code>의 load address는 <strong>0x8000</strong>이다.</p><p id="44590c60-3e88-41cb-b36b-f4d313d8c762" class=""><strong>0x24</strong>에 있는 <strong>0x0</strong>을 <strong>0x8000</strong>으로 바꿔준다.</p></li></ul><ul id="60bcf6a7-92a2-4b9a-b3c2-616d62db0b3f" class="bulleted-list"><li style="list-style-type:disc">relocation table의 세 번째 record를 읽는다. <p id="885fe552-2728-42be-bddb-32b1ceafcb38" class=""><strong>0x28</strong>에 있는 <strong>0x0</strong>의 symbol name은 <code>ext_func</code>이다.</p><p id="0761aa13-84e5-4a31-a09e-430f2b1e83d1" class="">symbol table을 읽는다.</p><p id="30fe3638-0f18-45f9-948a-38402f6a7c7f" class=""><code>ext_func</code>의 load address는 <strong>0x4100</strong>이다.</p><p id="71faef23-0554-4171-9bbc-3ac997d8cda7" class=""><strong>0x28</strong>에 있는 <strong>0x0</strong>을 <strong>0x4100</strong>으로 바꿔준다.</p></li></ul><p id="f5de8a5d-4315-4223-ba1c-77706c47f61d" class="">
+</p><p id="c6db3b36-eaa0-4dbc-8c18-c6576acd08cd" class="">text section은 다음과 같이 변하게 된다.</p><pre id="8a1468eb-dd33-48fa-8440-6110667c2cd4" class="code"><code>			main:
+				...
+				call PC+0x4C
+				...
+0x16    mov %eax, 0x8000
+0x20    add %eax, $10
+0x24    mov 0x8000, %eax
+0x28    call 0x4100
+			...</code></pre><p id="2f37b454-6a45-4c32-ad47-d3e5b38965e0" class="">
+</p><h3 id="9239acb1-cdf3-4971-9a8c-350f69de6806" class="">V. Conclusion</h3><p id="d7ea93da-85a9-44ce-a787-5ed2f3395199" class="">
+</p><p id="9063926e-df9d-46b6-beea-16f218e9442a" class="">Loader는 프로그램을 로딩하면서 4개의 segment를 생성한다.</p><p id="8d877c3b-7c35-4210-80d2-edfb00f86951" class="">
+</p><ul id="cbfbc50d-be6a-434e-8d73-28e1db23bc88" class="bulleted-list"><li style="list-style-type:disc"><strong>Code Segment</strong> : Code Section</li></ul><ul id="ca8a800f-3a64-4cbb-b9ff-905d76ab03a8" class="bulleted-list"><li style="list-style-type:disc"><strong>Data Segment</strong> : Data Section + BSS Section</li></ul><ul id="e3e9cf74-3941-455b-9f12-23a27e977502" class="bulleted-list"><li style="list-style-type:disc"><strong>Stack Segment</strong></li></ul><ul id="c7349012-8f09-4fdf-b0fc-392eaa9c69d0" class="bulleted-list"><li style="list-style-type:disc"><strong>Heap Segment</strong></li></ul><p id="6a421439-a914-4cd9-ae51-e4b0bfd8e035" class="">
+</p><p id="d91bfc6b-623b-4af1-9bfc-1fa3f38c2ecb" class="">code segment와 data segment는 프로그램을 로딩할 때 단 한 번만 메모리 할당을 한다. </p><p id="3a4e3ed6-d0e1-4cf8-8f2e-a3d72088266c" class="">즉, static memory allocation이 일어난다.</p><p id="3e6e6ee7-5e50-4ab5-8acd-318430c2c04b" class="">
+</p><p id="118963d1-e34c-4c4b-83a8-15690bee1786" class="">stack segment와 heap segment는 프로그램 실행 중에 필요할 때마다 메모리를 할당한다.</p><p id="f24b6f40-be77-4b29-b54a-09a806478a6a" class="">즉, dynamic storage allocation이 일어난다.</p><p id="535f08b1-8329-48f6-970b-0ca094199fdb" class="">
+</p></div></article></body></html>
