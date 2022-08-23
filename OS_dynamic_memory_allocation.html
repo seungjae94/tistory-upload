@@ -1,0 +1,733 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Dynamic Memory Allocation</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 3px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	text-indent: -1.7em;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-block;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1.25em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(55, 53, 47, 1);
+}
+.highlight-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.highlight-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.highlight-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.highlight-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.highlight-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.highlight-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.highlight-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.highlight-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.highlight-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.highlight-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.highlight-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.highlight-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.highlight-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.highlight-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.highlight-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.block-color-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.block-color-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.block-color-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.block-color-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.block-color-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.block-color-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.block-color-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.block-color-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.block-color-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.block-color-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.block-color-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.block-color-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.select-value-color-pink { background-color: rgba(245, 224, 233, 1); }
+.select-value-color-purple { background-color: rgba(232, 222, 238, 1); }
+.select-value-color-green { background-color: rgba(219, 237, 219, 1); }
+.select-value-color-gray { background-color: rgba(227, 226, 224, 1); }
+.select-value-color-opaquegray { background-color: rgba(255, 255, 255, 0.0375); }
+.select-value-color-orange { background-color: rgba(250, 222, 201, 1); }
+.select-value-color-brown { background-color: rgba(238, 224, 218, 1); }
+.select-value-color-red { background-color: rgba(255, 226, 221, 1); }
+.select-value-color-yellow { background-color: rgba(253, 236, 200, 1); }
+.select-value-color-blue { background-color: rgba(211, 229, 239, 1); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="d289b9ed-3cba-4d1a-86ce-dfa54b0d5739" class="page sans"><header><div class="page-header-icon undefined"><span class="icon">📄</span></div><h1 class="page-title">Dynamic Memory Allocation</h1></header><div class="page-body"><p id="37e28612-e808-473a-89c2-63576bf79ba6" class="">
+</p><h3 id="7eb79d99-b17e-4fb9-be0f-9a7d455203bf" class="">I. Static vs Dynamic</h3><p id="b70d62af-1957-4404-a8ca-717301d654de" class="">
+</p><p id="f5983883-ec9f-4a6f-98f7-26c6d02323d2" class=""><strong>Static</strong></p><p id="1678a9fd-7587-497c-8e9d-6182f28cb8e1" class="">pre-runtime에 무언가를 한다는 뜻이다.</p><p id="900e59f3-358a-4c60-8e12-d4533356c38e" class="">
+</p><p id="87b23d9a-fc2d-4dd7-88fa-5cc116ff7ea6" class=""><strong>Dynamic</strong></p><p id="09c0fca7-ee03-4577-8ac9-b637604bb7cc" class="">runtime에 무언가를 한다는 뜻이다.</p><p id="699905ec-ea46-4193-b064-8fa6a60acc7f" class="">
+</p><p id="e26d01f9-62ef-4df5-b25d-f0285badfda2" class=""><strong>Static Memory Allocation</strong></p><p id="1388fd8e-88a1-4c8d-a697-da1d1e8ddadc" class="">code segment, data segment의 경우 링킹 단계에서 memory address를 할당하기 때문에 static memory allocation을 한다고 볼 수 있다.</p><p id="6e434843-633e-4d98-a619-7f7362fe1cdc" class="">Static Memory Allocation은 변수의 lifecycle이 프로그램 시작/종료와 일치한다는 특징을 갖는다.</p><p id="c873c8e8-445e-4d6e-8a40-7db02add1e4d" class="">
+</p><p id="4887abc4-d0f7-473d-8c73-b73f2fef4a40" class=""><strong>Dynamic Memory Allocation</strong></p><p id="6f33d589-522b-4eb2-9745-e8272c0da54f" class="">stack segment, heap segment의 경우 runtime에 memory address를 할당하기 때문에 dynamic memory allocation을 한다고 볼 수 있다.</p><p id="c003ad9a-a86d-4fae-8a9f-1bd2b9164dcf" class="">
+</p><h3 id="5a569279-7c2f-4640-a4cb-b91c90bfd11f" class="">II. 왜 Dynamic Allocation이 필요한가?</h3><p id="62e3b6d8-c06f-4771-a595-3445d6b79b86" class="">
+</p><p id="a03fe018-abab-4c11-b821-036b8e30e30d" class="">예측 불가능성 때문이다.</p><pre id="d48879f3-7ad5-474d-8702-d1699c2b7948" class="code"><code>#include &lt;stdio.h&gt;
+
+void foo();
+void bar();
+
+int main(void) {
+	int sum = 0;
+	
+	for (int i = 0; i &lt; 10; i++) {
+		sum += i;
+	}
+
+	if (sum &gt; 50) {
+		foo();
+	}	
+	else {
+		bar();
+	}
+
+	return 0;
+}
+
+void foo() {
+	int arr[1];
+	printf(&quot;foo&quot;);
+}
+
+void bar() {
+	int arr[1000000];
+	printf(&quot;bar&quot;);
+}</code></pre><p id="4f0d8607-2d12-4473-b57e-4be880417b71" class="">
+</p><h3 id="ab3b0e05-5b3e-404e-9206-08b62e9dadb2" class="">III. Heap</h3><p id="d219a375-0c4b-4290-bf4d-964c458630ac" class="">
+</p><h3 id="3ec22170-4e89-48a1-aafe-5f2635d13d11" class=""><mark class="highlight-purple"><strong>Fragmentation</strong></mark></h3><p id="b3edbd95-bf6c-4f6a-9446-4b3523a92a60" class="">alloc과 free가 반복되다 보면 힙에 작은 hole 들이 발생하게 되고 이로 인해 남은 공간이 충분함에도 메모리 할당을 할 수 없는 현상이 발생한다. 그리고 이 현상을 <strong>fragmentation </strong>이라고 부른다.</p><p id="dca65a74-92dc-4dfe-a051-164eeb4fc381" class="">fragmentation은 시스템 성능에 매우 안좋은 영향을 미친다. 충분한 메모리 용량을 갖고 있음에도 메모리 할당을 할 수 없어서 프로그램 실행이 중단되는 일이 발생하기 때문이다.</p><p id="5cd26537-a9ab-4c00-a2da-8705cace9dba" class="">
+</p><p id="0c89a4c1-686b-4590-804b-0a6b19ac8d3a" class=""><mark class="highlight-purple"><strong>Anti-fragmentation approaches</strong></mark></p><p id="f974590f-6cfa-4bf9-9dbd-269c6d234a28" class="">buddy allocator, slab allocator, paging 등의 있고 리눅스에서는 buddy allocator 와 slab allocator를 섞어서 쓴다.</p><p id="46e09ac1-a05c-4aac-8c27-341581eee8aa" class="">
+</p><h3 id="7288c8c2-c259-40f6-8b7b-a3921d1fc5da" class=""><mark class="highlight-purple"><strong>Free list</strong></mark></h3><p id="89c8a840-236f-4ecc-b395-5c2894dc0e95" class="">힙은 각 hole을 노드로 하는 list인 free list로 관리한다. 구체적으로 각 hole의 first word가 포인터로 사용된다.</p><p id="89c6e0a3-242d-4585-9477-44900f1f0e6f" class="">
+</p><p id="17766e38-3175-4abd-850b-fa818ee89071" class="">computer scientist들은 memory request가 들어왔을 때 free list에서 어떤 hole을 할당할지 고민을 많이 했다.  </p><p id="2f26e089-1c23-4033-95dd-6136f3ec2a3b" class="">
+</p><p id="3a60c1ad-6b2d-4812-8c0a-31246106a312" class=""><strong>best-fit</strong></p><p id="0889a919-56c3-4cda-aee1-9e8b9200bb17" class="">가능한 가장 작은 hole을 할당한다.  </p><p id="f325de99-922c-4d5b-aa32-a9fa063253c0" class="">
+</p><p id="e8eb8e54-101e-4223-b44b-7c7c543a4a99" class=""><strong>first-fit</strong></p><p id="89ae6762-0be1-4112-9050-f4be108e7ce9" class="">가능한 첫 번째 hole을 할당한다.</p><p id="5be464c5-3046-4cec-8044-e4506655bc8e" class="">
+</p><p id="74810d0f-8e6c-4f75-abf6-c1b2e6b24ccb" class=""><strong>worst-fit</strong></p><p id="9478afe1-b305-4f4e-9f76-a8334685c8a6" class="">가능한 가장 큰 hole을 할당한다.</p><p id="5d579b13-e378-47b0-a683-17ed95e46279" class="">
+</p><p id="205eec74-c919-4eb7-aa58-36a607a05ff8" class="">얼핏 보면 best-fit이 가장 좋을 것 같지만 best-fit의 경우 발생하는 hole의 크기가 너무 작아진다는 문제가 있다.</p><p id="aa8e8469-d6ae-4c30-8cff-9f86aaab2de7" class="">policy만 가지고는 fragmentation 문제를 해결하기 힘들다는 결론을 내릴 수밖에 없다.</p><p id="640c5f92-9291-4f7f-bda4-a5078a83f602" class="">
+</p><h3 id="7351e9d7-9ed0-4873-b40e-d4bb41fd668f" class=""><mark class="highlight-purple">Memory Pool</mark></h3><p id="9a8e39ba-9b31-43dc-bc08-248f003a1d50" class="">
+</p><p id="40651363-b1ee-443f-8123-569651cb37d4" class="">fragmentation이 발생하는 근본적인 이유는 요구하는 메모리 사이즈와 홀의 사이즈가 딱 맞지 않기 때문이다. 이를 해결하기 위해서 unit size를 정해놓고 unit size로만 메모리 요청을 할 수 있도록 강제하는 방법을 생각해 볼 수 있다.</p><p id="f5819255-3100-485a-8c52-9a98e768b85a" class="">
+</p><p id="ecd3f07b-2417-4a59-9368-929f2b4ba89a" class="">하지만, 이 방법으로도 fragmentation 문제는 해결할 수 없다. </p><p id="99805213-f995-4eed-927d-4f68d1b71fb8" class="">
+</p><figure id="485d668d-913d-4f62-b88a-9533f6737ffa" class="image"><a href="Dynamic%20Memory%20Allocation%20485d668d913d4f62b88a9533f6737ffa/Untitled.png"><img style="width:1331px" src="Dynamic%20Memory%20Allocation%20485d668d913d4f62b88a9533f6737ffa/Untitled.png"/></a></figure><p id="872e121a-4f2b-48b5-a1ab-562ca1219c27" class="">
+</p><p id="736dfcb6-8a63-491b-984c-9a30236f3b14" class="">unit size를 작게 잡는다면 unit size 보다 큰 memory request에 의해 외부 fragmentation이 발생하게 된다. </p><p id="753dbf0b-ad30-4055-924e-bb3d6096bc74" class="">
+</p><figure id="f135f71e-ff35-44f4-a0dd-f74ed40afa19" class="image"><a href="Dynamic%20Memory%20Allocation%20485d668d913d4f62b88a9533f6737ffa/Untitled%201.png"><img style="width:816px" src="Dynamic%20Memory%20Allocation%20485d668d913d4f62b88a9533f6737ffa/Untitled%201.png"/></a></figure><p id="63496380-b26a-4c6b-9797-a7782efe2391" class="">
+</p><p id="f45ecf84-f5dc-4251-ae16-6b353790a8f3" class="">unit size를 크게 잡는다면 unit size 보다 작은 memory request에 의해 내부 fragmentation이 발생하게 된다.</p><p id="960c5142-a61b-4e06-b51a-2d3561b2f26a" class="">
+</p><p id="44f8935d-bc93-4586-916d-c528c7b64b9d" class="">그렇다면 memory request의 크기에 따라 유동적으로 메모리를 할당하는 것은 어떨까?</p><p id="dee4014b-bc9a-44da-a7e3-f55d5fed18f4" class="">
+</p><figure id="759721f9-1860-4dcd-8beb-1d0f1df22783" class="image"><a href="Dynamic%20Memory%20Allocation%20485d668d913d4f62b88a9533f6737ffa/Untitled%202.png"><img style="width:781px" src="Dynamic%20Memory%20Allocation%20485d668d913d4f62b88a9533f6737ffa/Untitled%202.png"/></a></figure><p id="3d3cf0e1-5ae4-4e15-a5fa-9f68e5564f8c" class="">
+</p><p id="612bdc95-db12-4daa-958c-ca8bae310aca" class="">메모리 풀은 unit size로만 메모리 요청을 할 수 있도록 강제하되 다양한 unit size를 허용하는 기법이다. 예를 들어, 1.8K 크기의 메모리 요청이 들어온다면 2K free list에 있는 2K 크기의 노드를 할당하는 것이다.</p><p id="069eba92-45da-4c1c-97b1-2ddbda9d9a3e" class="">
+</p><p id="43a2579f-b95a-438f-b7de-d046498dffc3" class="">하지만 메모리 풀 역시 fragmentation 문제를 완전히 해결할 수는 없다. 예를 들어, 1K 크기의 메모리 요청만 빈번하게 이루어진다면 1K free list가 소진되는 순간부터 1K 크기의 메모리를 할당할 수가 없게 된다.</p><p id="f5105feb-49ee-4f43-a4e1-9a065ec2cb27" class="">
+</p><p id="6dfcc738-7f78-4344-8199-ddc5fd59253b" class="">그럼에도 불구하고 메모리 풀은 굉장히 유용하기 때문에 현실에서 많이 사용한다.</p><p id="349aab8c-2abd-4858-b325-37a6179bc345" class="">
+</p><p id="b37bb2b6-f9c0-45f0-8841-74e9c14dee9f" class="">
+</p><p id="4c35df83-dfc1-4d41-8806-95a31d473b6a" class="">
+</p><p id="bae46c8e-4cc0-49f3-9c83-283fbc168c63" class="">
+</p><p id="5a741581-a3a1-4412-901e-4a3677d3b2ef" class="">
+</p><p id="ceedb21e-d01d-4b20-8ccd-9d0aafc7ac24" class="">
+</p></div></article></body></html>
